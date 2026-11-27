@@ -44,8 +44,6 @@ enum Snap {
     }
 
     static func move(appNamed name: String?, to zone: Zone) throws {
-        guard AXIsProcessTrusted() else { throw Failure.notTrusted }
-
         let app: NSRunningApplication
         if let name {
             guard let found = NSWorkspace.shared.runningApplications.first(where: {
@@ -59,6 +57,15 @@ enum Snap {
             }
             app = front
         }
+        try move(app, to: zone)
+    }
+
+    /// Moving a known application, rather than one looked up by name. The
+    /// menu bar needs this: by the time a menu item is chosen the frontmost
+    /// application is this one, so the target has to have been remembered
+    /// before the menu opened.
+    static func move(_ app: NSRunningApplication, to zone: Zone) throws {
+        guard AXIsProcessTrusted() else { throw Failure.notTrusted }
 
         let label = app.localizedName ?? "The application"
         let axApp = AXUIElementCreateApplication(app.processIdentifier)

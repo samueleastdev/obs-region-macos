@@ -123,11 +123,47 @@ capturezone snap --app "Google Chrome"     # put a window in it, once
 
 While `zone` is running, **ctrl+opt+cmd+z** puts the frontmost window in the
 rectangle. `--hotkey ctrl+shift+1` picks another, `--no-hotkey` registers
-none. Also `--colour RRGGBB`, `--width N`, and `--quiet` to print just the
-zone without the OBS instructions.
+none. Also `--colour RRGGBB`, `--width N`, `--quiet` to print just the zone
+without the OBS instructions, and `--no-menu-bar`.
 
 The zone is remembered in `~/.config/capturezone/zone.json`, so `snap` and
 `crop` do not need it spelled out again.
+
+## Can I right-click a window and fit it to the zone?
+
+Not literally. A context menu belongs to the application drawing it, and
+macOS gives nothing outside Chrome any way to add a line to Chrome's menu.
+That is a deliberate design, not a gap.
+
+Three things that do work:
+
+**The hot key.** ctrl+opt+cmd+z while `zone` is running. Nothing to set up
+and it works in every application.
+
+**The menu bar.** While `zone` is running there is a dashed rectangle in the
+menu bar. Its first item names whatever you were last in, so it reads
+**Fit Google Chrome to zone**. It also hides the outline and copies the OBS
+values.
+
+It has to name the application that *was* front rather than the one that
+is, because opening a menu makes capturezone itself frontmost. It watches
+activations and keeps the last one that was not us.
+
+**The Services menu**, which is the closest thing macOS has to what you
+actually asked for:
+
+1. Open **Shortcuts**, make a new shortcut, add a **Run Shell Script**
+   action.
+2. Script: `/usr/local/bin/capturezone snap`
+3. In the shortcut's **ⓘ** sidebar, tick **Use as Quick Action** and
+   **Services Menu**.
+
+It then appears under right-click, **Services**, in applications that show
+services without a selection, and always under the application menu's own
+Services submenu. Coverage is not universal, which is why it is third on
+this list. The first run will ask to grant Accessibility to Shortcuts
+rather than to capturezone, because the permission follows whatever
+launches the command.
 
 ## Do I have to pay for something to do this?
 

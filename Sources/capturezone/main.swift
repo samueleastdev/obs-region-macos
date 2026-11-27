@@ -59,6 +59,7 @@ capturezone: hold a fixed capture region on screen, and put windows in it.
       --hotkey SPEC     snap the frontmost window into the zone,
                         default ctrl+opt+cmd+z
       --no-hotkey       do not register one
+      --no-menu-bar     do not add the menu bar item
       --quiet           just the zone, without the OBS instructions
 
   capturezone snap [--app "Google Chrome"]
@@ -203,21 +204,8 @@ func runZone(_ options: Options) {
     // No Dock icon and no menu bar. This is a guide, not an application.
     app.setActivationPolicy(.accessory)
 
-    var overlay = OverlayWindow(zone: zone, colour: colour, lineWidth: width)
-    overlay.orderFrontRegardless()
-
-    // Plugging in a display, or rearranging them, moves the Cocoa origin and
-    // leaves the outline in the wrong place. Rebuilding it is cheaper than
-    // working out what moved.
-    NotificationCenter.default.addObserver(
-        forName: NSApplication.didChangeScreenParametersNotification,
-        object: nil,
-        queue: .main
-    ) { _ in
-        overlay.orderOut(nil)
-        overlay = OverlayWindow(zone: zone, colour: colour, lineWidth: width)
-        overlay.orderFrontRegardless()
-    }
+    let outline = Outline(zone: zone, colour: colour, lineWidth: width)
+    let menuBar = options.flag("no-menu-bar") ? nil : MenuBar(zone: zone, outline: outline)
 
     print("Zone: \(describe(zone))")
     if !options.flag("quiet") {
@@ -225,6 +213,9 @@ func runZone(_ options: Options) {
         print(obsSetup(for: zone))
         print("")
         print("The outline is drawn just outside the zone, so it is never in the capture.")
+    }
+    if menuBar != nil {
+        print("Menu bar: fit the window you were last in, hide the outline, copy the values.")
     }
 
     var hotkey: Hotkey?
@@ -244,7 +235,7 @@ func runZone(_ options: Options) {
         }
         print("Press \(spec) to put the frontmost window in it.")
     }
-    withExtendedLifetime(hotkey) {
+    withExtendedLifetime((hotkey, outline, menuBar)) {
         print("Ctrl-C to stop.")
         app.run()
     }

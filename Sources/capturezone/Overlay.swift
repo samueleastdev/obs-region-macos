@@ -68,3 +68,42 @@ extension NSColor {
                        alpha: 1)
     }
 }
+
+/// Owns the outline window, so that everything which needs to disturb it
+/// (the menu bar hiding it, a display being plugged in) has one thing to
+/// talk to rather than a variable captured in three closures.
+final class Outline {
+    private let zone: Zone
+    private let colour: NSColor
+    private let lineWidth: CGFloat
+    private var window: OverlayWindow
+    private(set) var isVisible = true
+
+    init(zone: Zone, colour: NSColor, lineWidth: CGFloat) {
+        self.zone = zone
+        self.colour = colour
+        self.lineWidth = lineWidth
+        window = OverlayWindow(zone: zone, colour: colour, lineWidth: lineWidth)
+        window.orderFrontRegardless()
+
+        // Plugging in a display, or rearranging them, moves the Cocoa origin
+        // and leaves the outline in the wrong place. Building a new one is
+        // cheaper than working out what moved.
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in self?.rebuild() }
+    }
+
+    func setVisible(_ visible: Bool) {
+        isVisible = visible
+        if visible { window.orderFrontRegardless() } else { window.orderOut(nil) }
+    }
+
+    private func rebuild() {
+        window.orderOut(nil)
+        window = OverlayWindow(zone: zone, colour: colour, lineWidth: lineWidth)
+        if isVisible { window.orderFrontRegardless() }
+    }
+}
