@@ -1,10 +1,19 @@
-# obs-region-macos
+# Free OBS Region Capture for macOS
 
-**Capture a fixed region of your screen in OBS on macOS.** Draws the crop
-rectangle on screen as a guide, prints the Crop/Pad numbers, and snaps
-windows into it with a hot key.
+[![licence: MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+[![platform: macOS 13+](https://img.shields.io/badge/platform-macOS%2013%2B-lightgrey.svg)](#install)
+[![language: Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)](Package.swift)
 
-One 171 KB binary. No dependencies, no OBS plugin, no menu bar app.
+**OBS has no region capture on macOS.** This draws the crop rectangle on
+your screen so you can see it, prints the Crop/Pad numbers OBS needs, and
+puts windows in it with a hot key or from the menu bar.
+
+Free and open source, MIT. One 200 KB binary, no dependencies, no OBS
+plugin, nothing to configure.
+
+<!-- Demo video: once the YouTube video is up, replace this comment with
+[![Watch the demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://youtu.be/VIDEO_ID)
+and swap VIDEO_ID for the real one in both places. -->
 
 ```
 $ capturezone zone --centre 1920x1080
@@ -18,6 +27,7 @@ OBS, once:
   4  That source, Transform, Fit to Screen
 
 The outline is drawn just outside the zone, so it is never in the capture.
+Menu bar: fit the window you were last in, hide the outline, copy the values.
 Press ctrl+opt+cmd+z to put the frontmost window in it.
 Ctrl-C to stop.
 ```
@@ -28,9 +38,10 @@ The outline appears, and the numbers for OBS come with it.
 
 ## Does OBS have region capture on macOS?
 
-No. OBS on macOS offers macOS Screen Capture with three methods, Display,
+No. OBS on macOS offers **macOS Screen Capture** with three methods, Display,
 Window and Application, and there is no fourth. You cannot draw a box and
-record it the way **⇧⌘5** does.
+record it the way **⇧⌘5** does. The older Display Capture source, now marked
+deprecated, has no region either.
 
 The supported answer is to capture a whole display and crop it with the
 **Crop/Pad** filter, which works and costs nothing. The part nobody solves
@@ -57,9 +68,8 @@ OBS, once:
   4  That source, Transform, Fit to Screen
 ```
 
-`zone` prints the same thing, so in practice you never need to run `crop`
-separately. It is there for when you have the zone set already and just want
-the numbers back.
+`zone` prints the same thing, so in practice you never need `crop`. It is
+there for when the zone is set already and you just want the numbers back.
 
 ### Crop values for common monitors
 
@@ -88,8 +98,8 @@ numbers filled in, but in full:
 1. **Settings, Video**: set Base (Canvas) and Output (Scaled) to `1920x1080`.
 2. **Add Source, macOS Screen Capture**. Set **Method** to **Display
    Capture**, not Window Capture, then pick your monitor. Window Capture
-   follows one app's window and cannot be cropped to a fixed area of the
-   screen.
+   follows one application's window and cannot be cropped to a fixed area of
+   the screen.
 3. Right-click that source in the **Sources** list, **Filters**. Bottom
    left, under Effect Filters, **+**, **Crop/Pad**.
 4. Leave **Relative** ticked and enter the four numbers.
@@ -124,7 +134,7 @@ ln -sf "$PWD/.build/release/capturezone" /usr/local/bin/capturezone
 ```
 
 Needs the Swift toolchain, which comes with Xcode or the Command Line Tools
-(`xcode-select --install`). macOS 13 or later.
+(`xcode-select --install`). macOS 13 or later, Apple Silicon or Intel.
 
 If `/usr/local/bin` is not writable, `~/.local/bin` is on the PATH in most
 shells and needs no `sudo`.
@@ -132,17 +142,31 @@ shells and needs no `sudo`.
 ## Commands
 
 ```sh
-capturezone list                           # displays, and the numbers to place a zone
-capturezone zone --centre 1920x1080        # draw it, stay running, Ctrl-C to stop
-capturezone zone --rect 760,180,1920,1080  # place it by hand instead
-capturezone crop                           # the OBS Crop/Pad numbers
-capturezone snap --app "Google Chrome"     # put a window in it, once
+capturezone list                            # displays, and the numbers to place a zone
+capturezone zone --centre 1920x1080         # draw it, stay running, Ctrl-C to stop
+capturezone zone --centre 1920x1080 --display 2
+capturezone zone --rect 760,180,1920,1080   # place it by hand instead
+capturezone crop                            # the OBS Crop/Pad numbers
+capturezone snap --app "Google Chrome"      # put a window in it, once
+capturezone help
 ```
 
-While `zone` is running, **ctrl+opt+cmd+z** puts the frontmost window in the
-rectangle. `--hotkey ctrl+shift+1` picks another, `--no-hotkey` registers
-none. Also `--colour RRGGBB`, `--width N`, `--quiet` to print just the zone
-without the OBS instructions, and `--no-menu-bar`.
+Options on `zone`:
+
+| | |
+|---|---|
+| `--display N` | which screen to centre on, numbered as `list` numbers them |
+| `--colour RRGGBB` | outline colour, default `00E5FF` |
+| `--width N` | outline thickness in points, default `2` |
+| `--hotkey SPEC` | default `ctrl+opt+cmd+z`, any modifier plus a letter or digit |
+| `--no-hotkey` | register none |
+| `--no-menu-bar` | no menu bar item |
+| `--quiet` | just the zone, without the OBS instructions |
+
+Sizes are given in **pixels**, the same as OBS reports them. Positions are
+**points** from the top left of the primary display, the same as the
+Displays arrangement pane. The two differ by the backing scale, and `list`
+prints both for every screen.
 
 The zone is remembered in `~/.config/capturezone/zone.json`, so `snap` and
 `crop` do not need it spelled out again.
@@ -150,25 +174,25 @@ The zone is remembered in `~/.config/capturezone/zone.json`, so `snap` and
 ## Can I right-click a window and fit it to the zone?
 
 Not literally. A context menu belongs to the application drawing it, and
-macOS gives nothing outside Chrome any way to add a line to Chrome's menu.
+macOS gives nothing outside that application any way to add a line to it.
 That is a deliberate design, not a gap.
 
 Three things that do work:
 
-**The hot key.** ctrl+opt+cmd+z while `zone` is running. Nothing to set up
-and it works in every application.
+**The hot key.** ctrl+opt+cmd+z while `zone` is running. Nothing to set up,
+works in every application.
 
 **The menu bar.** While `zone` is running there is a dashed rectangle in the
 menu bar. Its first item names whatever you were last in, so it reads
 **Fit Google Chrome to zone**. It also hides the outline and copies the OBS
-values.
+values to the clipboard.
 
-It has to name the application that *was* front rather than the one that
-is, because opening a menu makes capturezone itself frontmost. It watches
+It names the application that *was* front rather than the one that is,
+because opening a menu makes capturezone frontmost and by then the window
+you were looking at is nobody's idea of the front one. It watches
 activations and keeps the last one that was not us.
 
-**The Services menu**, which is the closest thing macOS has to what you
-actually asked for:
+**The Services menu**, which is the closest macOS gets to the original idea:
 
 1. Open **Shortcuts**, make a new shortcut, add a **Run Shell Script**
    action.
@@ -177,21 +201,48 @@ actually asked for:
    **Services Menu**.
 
 It then appears under right-click, **Services**, in applications that show
-services without a selection, and always under the application menu's own
+services without a selection, and always under an application menu's own
 Services submenu. Coverage is not universal, which is why it is third on
-this list. The first run will ask to grant Accessibility to Shortcuts
-rather than to capturezone, because the permission follows whatever
-launches the command.
+this list. The first run asks to grant Accessibility to Shortcuts rather
+than to capturezone, because the permission follows whatever launches the
+command.
+
+## Troubleshooting
+
+**The hot key does nothing, but the outline is there.** That is exactly what
+missing Accessibility looks like: drawing needs no permission, moving a
+window does. Tick your **terminal** in System Settings, Privacy & Security,
+Accessibility, then run it again. The permission follows whatever launched
+the command, which is why it is the terminal and not capturezone.
+
+**"Could not register ctrl+opt+cmd+z."** Something else on the machine holds
+it. Pick another with `--hotkey ctrl+shift+1`.
+
+**The OBS preview does not match the outline.** Either Fit to Screen was not
+applied after the crop, or the canvas is not the size the crop produces.
+`capturezone crop` prints both numbers; check them against Settings, Video.
+
+**Every number is double what I expected.** A Retina or scaled display.
+`capturezone list` shows the backing scale and both sizes. Keep giving sizes
+in pixels and let it do the conversion.
+
+**A window will not move.** Full screen windows and fixed size windows
+cannot be positioned by anything, this included. Leave full screen first.
+
+**The outline turned up in my recording.** It cannot come from the zone it
+is drawn around, which it sits outside by design. Check you are not also
+capturing a second display, and that the Crop/Pad numbers match the zone
+rather than an older one.
 
 ## Do I have to pay for something to do this?
 
 No, and that is most of the point. Every app below solves this, among many
-other things, and every one of them is a good app. None of them is needed
-if a visible rectangle and a crop filter is all you are missing.
+other things, and every one of them is a good app. None is needed if a
+visible rectangle and a crop filter is all you are missing.
 
 Prices are one-time unless marked, and were checked in November 2026.
 
-| | Price | What it gives you here | Still worth it when |
+| Tool | Price | What it gives you here | Still worth it when |
 |---|---|---|---|
 | [Rectangle](https://rectangleapp.com) | Free, MIT | Halves and thirds only. **Custom sizes are Pro**, so the free version cannot place a 1920x1080 window. | You want tiling generally |
 | [Rectangle Pro](https://rectangleapp.com/pro) | $9.99 | Custom window sizes, so it solves the placing half | You want snap areas, per-app rules, gestures |
@@ -204,7 +255,7 @@ Prices are one-time unless marked, and were checked in November 2026.
 reading and press ⇧⌘5. If you want a *live source in OBS* for streaming,
 compositing with a camera, or scene switching, the Crop/Pad filter already
 does the work for free and the only thing missing was being able to see the
-rectangle. That is a 171 KB binary, not a purchase.
+rectangle. That is a 200 KB binary, not a purchase.
 
 The one case where money genuinely buys a better answer is BetterDisplay's
 virtual display. A real 1920x1080 screen you can drag windows onto beats a
@@ -227,20 +278,22 @@ Snapping uses the Accessibility API, the same thing every window manager on
 macOS uses. Position, then size, then position again, because a window moved
 to a display it does not yet fit on gets clamped to it.
 
-The hot key is registered through Carbon's `RegisterEventHotKey`, which
-needs **no permission at all**. The modern alternative, a `CGEventTap`,
-reads every keystroke on the machine and macOS quite rightly makes you grant
-Input Monitoring for it. This is told about one combination and sees nothing
-else.
+The hot key goes through Carbon's `RegisterEventHotKey`, which needs **no
+permission at all**. The modern alternative, a `CGEventTap`, reads every
+keystroke on the machine and macOS quite rightly makes you grant Input
+Monitoring for it. This is told about one combination and sees nothing else.
 
 ## Permissions
 
-Drawing the outline needs nothing at all.
+| | |
+|---|---|
+| Drawing the outline | nothing at all |
+| The hot key | nothing at all |
+| Moving a window | Accessibility, granted to your terminal |
 
-Moving a window needs Accessibility. A command line tool inherits the
-permission of whatever launched it, so the entry to tick in **System
-Settings, Privacy & Security, Accessibility** is your terminal, not
-capturezone. The first `snap` will ask.
+A command line tool inherits the permission of whatever launched it, so the
+entry to tick in **System Settings, Privacy & Security, Accessibility** is
+your terminal, not capturezone. The first `snap` will ask.
 
 ## What it will not do
 
@@ -255,4 +308,4 @@ design: a capture that moves is a capture you cannot frame.
 
 ## Licence
 
-MIT.
+MIT. See [LICENSE](LICENSE).
