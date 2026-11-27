@@ -6,10 +6,23 @@ windows into it with a hot key.
 
 One 171 KB binary. No dependencies, no OBS plugin, no menu bar app.
 
-```sh
-capturezone zone --centre 1920x1080    # the outline appears, ctrl+opt+cmd+z snaps a window into it
-capturezone crop                       # the four numbers OBS wants
 ```
+$ capturezone zone --centre 1920x1080
+Zone: 1920x1080 pt at 760,180 = 1920x1080 px on GF340E
+
+OBS, once:
+  1  Settings, Video: Base and Output both 1920x1080
+  2  Add Source, macOS Screen Capture, Method Display, GF340E
+  3  That source, Filters, +, Crop/Pad, Relative ticked:
+       Left 760   Top 180   Right 760   Bottom 180
+  4  That source, Transform, Fit to Screen
+
+The outline is drawn just outside the zone, so it is never in the capture.
+Press ctrl+opt+cmd+z to put the frontmost window in it.
+Ctrl-C to stop.
+```
+
+The outline appears, and the numbers for OBS come with it.
 
 ---
 
@@ -36,15 +49,17 @@ trimming 760 pixels off each side and 180 off the top and bottom.
 $ capturezone crop
 Zone: 1920x1080 pt at 760,180 = 1920x1080 px on GF340E
 
-OBS source: macOS Screen Capture, Display, GF340E
-OBS canvas and output: 1920x1080
-
-Crop/Pad filter, Relative ticked:
-  Left    760
-  Top     180
-  Right   760
-  Bottom  180
+OBS, once:
+  1  Settings, Video: Base and Output both 1920x1080
+  2  Add Source, macOS Screen Capture, Method Display, GF340E
+  3  That source, Filters, +, Crop/Pad, Relative ticked:
+       Left 760   Top 180   Right 760   Bottom 180
+  4  That source, Transform, Fit to Screen
 ```
+
+`zone` prints the same thing, so in practice you never need to run `crop`
+separately. It is there for when you have the zone set already and just want
+the numbers back.
 
 ### Crop values for common monitors
 
@@ -67,15 +82,22 @@ you have.
 
 ## Setting it up in OBS, start to finish
 
-1. `capturezone crop` and keep the output.
-2. OBS, **Settings, Video**: set Base (Canvas) and Output (Scaled) to the
-   size it printed.
-3. **Add Source, macOS Screen Capture**, Method **Display**, the display it
-   named.
-4. Right-click the source, **Filters, +, Crop/Pad**. Leave **Relative**
-   ticked and enter the four numbers.
-5. Right-click the source, **Transform, Fit to Screen** (⌘F).
-6. `capturezone zone --centre 1920x1080` and leave it running while you work.
+`capturezone zone --centre 1920x1080` prints these with your own display's
+numbers filled in, but in full:
+
+1. **Settings, Video**: set Base (Canvas) and Output (Scaled) to `1920x1080`.
+2. **Add Source, macOS Screen Capture**. Set **Method** to **Display
+   Capture**, not Window Capture, then pick your monitor. Window Capture
+   follows one app's window and cannot be cropped to a fixed area of the
+   screen.
+3. Right-click that source in the **Sources** list, **Filters**. Bottom
+   left, under Effect Filters, **+**, **Crop/Pad**.
+4. Leave **Relative** ticked and enter the four numbers.
+5. Right-click the source in the preview, **Transform, Fit to Screen**
+   (⌘F).
+
+Leave `capturezone zone` running while you work, and drag windows into the
+outline. **ctrl+opt+cmd+z** puts the frontmost one there exactly.
 
 ## Install
 
@@ -101,7 +123,8 @@ capturezone snap --app "Google Chrome"     # put a window in it, once
 
 While `zone` is running, **ctrl+opt+cmd+z** puts the frontmost window in the
 rectangle. `--hotkey ctrl+shift+1` picks another, `--no-hotkey` registers
-none. Also `--colour RRGGBB` and `--width N`.
+none. Also `--colour RRGGBB`, `--width N`, and `--quiet` to print just the
+zone without the OBS instructions.
 
 The zone is remembered in `~/.config/capturezone/zone.json`, so `snap` and
 `crop` do not need it spelled out again.

@@ -59,6 +59,7 @@ capturezone: hold a fixed capture region on screen, and put windows in it.
       --hotkey SPEC     snap the frontmost window into the zone,
                         default ctrl+opt+cmd+z
       --no-hotkey       do not register one
+      --quiet           just the zone, without the OBS instructions
 
   capturezone snap [--app "Google Chrome"]
       Put a window in the remembered zone, once.
@@ -137,30 +138,44 @@ func listDisplays() {
     print("\nA centred 1920x1080 on display 1:  capturezone zone --centre 1920x1080")
 }
 
-func printCrop(_ options: Options) {
-    let zone = resolveZone(options)
-    guard let screen = Screens.holding(zone) else { fail("That zone is not on any display.") }
-
+/// The whole OBS recipe for a zone.
+///
+/// Printed by `crop`, and by `zone` as well, because the moment the outline
+/// appears the next thing wanted is the four numbers that make OBS agree
+/// with it, and sending someone off to run a second command for them was
+/// making one job into two sittings.
+func obsSetup(for zone: Zone) -> String {
+    guard let screen = Screens.holding(zone) else {
+        return "That zone is not on any display, so there are no OBS numbers for it."
+    }
     let scale = screen.backingScaleFactor
     let display = Screens.cgRect(from: screen.frame)
 
-    let left = (zone.x - display.minX) * scale
-    let top = (zone.y - display.minY) * scale
-    let right = (display.maxX - (zone.x + zone.width)) * scale
-    let bottom = (display.maxY - (zone.y + zone.height)) * scale
+    let left = Int((zone.x - display.minX) * scale)
+    let top = Int((zone.y - display.minY) * scale)
+    let right = Int((display.maxX - (zone.x + zone.width)) * scale)
+    let bottom = Int((display.maxY - (zone.y + zone.height)) * scale)
+    let canvas = "\(Int(zone.width * scale))x\(Int(zone.height * scale))"
 
-    print("Zone: \(describe(zone))\n")
-    print("OBS source: macOS Screen Capture, Display, \(screen.localizedName)")
-    print("OBS canvas and output: \(Int(zone.width * scale))x\(Int(zone.height * scale))\n")
-    print("Crop/Pad filter, Relative ticked:")
-    print("  Left    \(Int(left))")
-    print("  Top     \(Int(top))")
-    print("  Right   \(Int(right))")
-    print("  Bottom  \(Int(bottom))")
-
+    var lines = [
+        "OBS, once:",
+        "  1  Settings, Video: Base and Output both \(canvas)",
+        "  2  Add Source, macOS Screen Capture, Method Display, \(screen.localizedName)",
+        "  3  That source, Filters, +, Crop/Pad, Relative ticked:",
+        "       Left \(left)   Top \(top)   Right \(right)   Bottom \(bottom)",
+        "  4  That source, Transform, Fit to Screen",
+    ]
     if [left, top, right, bottom].contains(where: { $0 < 0 }) {
-        print("\nA negative number means the zone hangs off the edge of the display.")
+        lines.append("")
+        lines.append("A negative number means the zone hangs off the edge of the display.")
     }
+    return lines.joined(separator: "\n")
+}
+
+func printCrop(_ options: Options) {
+    let zone = resolveZone(options)
+    print("Zone: \(describe(zone))\n")
+    print(obsSetup(for: zone))
 }
 
 func snapOnce(_ options: Options) {
@@ -205,6 +220,12 @@ func runZone(_ options: Options) {
     }
 
     print("Zone: \(describe(zone))")
+    if !options.flag("quiet") {
+        print("")
+        print(obsSetup(for: zone))
+        print("")
+        print("The outline is drawn just outside the zone, so it is never in the capture.")
+    }
 
     var hotkey: Hotkey?
     if !options.flag("no-hotkey") {
