@@ -295,6 +295,30 @@ A command line tool inherits the permission of whatever launched it, so the
 entry to tick in **System Settings, Privacy & Security, Accessibility** is
 your terminal, not capturezone. The first `snap` will ask.
 
+### What it can and cannot see
+
+Accessibility is a broad permission and you should not hand it to a program
+off the internet without knowing what it does with it. The whole of this
+one's use of it is three calls, all in
+[`Snap.swift`](Sources/capturezone/Snap.swift):
+
+| | |
+|---|---|
+| Reads | `kAXFocusedWindow` of one application: a handle, not any content |
+| Writes | that window's `kAXPosition` and `kAXSize` |
+| Never touches | window contents, text, the screen, the clipboard, other applications |
+
+It makes **no network calls of any kind**. There is no telemetry, no update
+check, and no dependency that could add one: the package has zero external
+packages and `grep` for `URLSession` comes back empty.
+
+It writes exactly one file, `~/.config/capturezone/zone.json`, holding four
+numbers.
+
+The hot key sees nothing. `RegisterEventHotKey` has the window server
+deliver one combination, where a `CGEventTap` would receive every keystroke
+on the machine and need Input Monitoring for it.
+
 ## What it will not do
 
 Move a window that is full screen, or one that refuses to be resized. No

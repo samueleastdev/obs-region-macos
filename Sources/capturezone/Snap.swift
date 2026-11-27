@@ -70,10 +70,16 @@ enum Snap {
         let label = app.localizedName ?? "The application"
         let axApp = AXUIElementCreateApplication(app.processIdentifier)
 
+        // Checked against the type id rather than cast and hoped for. The
+        // attribute is documented to be an AXUIElement, but a forced cast
+        // on anything else is a crash where an error will do, and this runs
+        // against whatever application happens to be in front.
         var value: CFTypeRef?
         guard AXUIElementCopyAttributeValue(axApp, kAXFocusedWindowAttribute as CFString, &value) == .success,
-              let window = value as! AXUIElement?
+              let raw = value,
+              CFGetTypeID(raw) == AXUIElementGetTypeID()
         else { throw Failure.noWindow(label) }
+        let window = raw as! AXUIElement
 
         // Position, then size, then position again. One pass is not enough:
         // a window moved to a display it does not yet fit on is clamped to
