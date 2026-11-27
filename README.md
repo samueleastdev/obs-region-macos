@@ -101,6 +101,21 @@ outline. **ctrl+opt+cmd+z** puts the frontmost one there exactly.
 
 ## Install
 
+### Just use Claude
+
+Paste this into [Claude Code](https://claude.com/claude-code), or any coding
+agent with a terminal:
+
+> Clone https://github.com/samueleastdev/obs-region-macos, build it with
+> `swift build -c release`, and symlink `.build/release/capturezone` onto my
+> PATH. Then run `capturezone list`, and start a centred 1920x1080 zone on
+> my main display. Tell me the OBS Crop/Pad numbers it prints so I can set
+> OBS up.
+
+It will install the Xcode Command Line Tools first if you do not have them.
+
+### By hand
+
 ```sh
 git clone https://github.com/samueleastdev/obs-region-macos
 cd obs-region-macos
@@ -110,6 +125,9 @@ ln -sf "$PWD/.build/release/capturezone" /usr/local/bin/capturezone
 
 Needs the Swift toolchain, which comes with Xcode or the Command Line Tools
 (`xcode-select --install`). macOS 13 or later.
+
+If `/usr/local/bin` is not writable, `~/.local/bin` is on the PATH in most
+shells and needs no `sudo`.
 
 ## Commands
 
