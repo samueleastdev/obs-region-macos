@@ -13,7 +13,7 @@ plugin, nothing to configure.
 
 ### Watch it work
 
-[![Free OBS Screen Capture Tool for Ultrawide Monitors](https://i.ytimg.com/vi/3mfIPXjS-dY/hqdefault.jpg)](https://www.youtube.com/watch?v=3mfIPXjS-dY)
+[![Free OBS Screen Capture Tool for Ultrawide Monitors](https://i.ytimg.com/vi/3mfIPXjS-dY/maxresdefault.jpg)](https://www.youtube.com/watch?v=3mfIPXjS-dY)
 
 ```
 $ capturezone zone --centre 1920x1080
