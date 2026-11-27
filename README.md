@@ -11,9 +11,9 @@ puts windows in it with a hot key or from the menu bar.
 Free and open source, MIT. One 200 KB binary, no dependencies, no OBS
 plugin, nothing to configure.
 
-<!-- Demo video: once the YouTube video is up, replace this comment with
-[![Watch the demo](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://youtu.be/VIDEO_ID)
-and swap VIDEO_ID for the real one in both places. -->
+### Watch it work
+
+[![Free OBS Screen Capture Tool for Ultrawide Monitors](https://i.ytimg.com/vi/3mfIPXjS-dY/maxresdefault.jpg)](https://www.youtube.com/watch?v=3mfIPXjS-dY)
 
 ```
 $ capturezone zone --centre 1920x1080
